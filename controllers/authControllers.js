@@ -327,3 +327,34 @@ exports.updateUser = async(req,res) =>{
         });
     }
 };
+
+// 6. Eliminar usuario (SOLO ADMIN)
+exports.deteleUser = async(req,res)=>{
+    try{
+        // Verificar que sea admin
+        if(!checkPermission(req.userRole,[removeEventListener.ADMIN])){
+            return res.status(403).json({
+                success: false,
+                message:'Solo administradores pueden eliminar  usuarios',
+
+            });
+        }
+        const deletedUser = await User.findByIdAndDelete(req.params.id);
+        if(!deletedUser) {
+            return res.status(404).json({
+                success:false,
+                message:'Usuario no encontrado'
+            });
+        }
+        return res.status(200).json({
+            success:true,
+            message:'Uusario eliminado correctamente'
+        });
+    }catch(error){
+        console.error('Error en deleteUser', error)
+        return res.status(500).json({
+            success:false,
+            message:'Error al eliminar usuario'
+        });
+    }
+};

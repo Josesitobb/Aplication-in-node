@@ -50,3 +50,16 @@ try{
     });
 }
 };
+
+
+// Validacion antes de exportar 
+if(typeof verifyTokenFn !=='funtion'){
+    console.error('[AuthJWT] ERROR : verifyTokenFn no es una funcion')
+    throw new Error('verifyTokenFn debe ser una funcion');
+}
+
+console.log('[AuthJWT] Middleawre verifyTokenFn en una funcion', typeof verifyTokenFn);
+
+module.exports ={
+    verifyToken:verifyTokenFn
+};

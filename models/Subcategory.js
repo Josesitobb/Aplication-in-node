@@ -1,5 +1,5 @@
-const { type } = require('express/lib/response');
 const mongoose  = require('mongoose');
+
 const subcategorySchemna = new mongoose.Schema({
 
     name:{

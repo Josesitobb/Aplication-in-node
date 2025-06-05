@@ -12,23 +12,23 @@ const ROLES = {
 };
 
 // Funcion para verificar permisos
-
 const checkPermission = (UserRole,allwebRoles)=>{
     return allwebRoles.includes(UserRole);
 };
 
-// 1. Registro de usuarios
+// 1. Registro de usuarios(SOLO ADMIN)
 exports.singup = async(req,res)=>{
     try{
         const user = new User({
             username:req.body.username,
             email :req.body.email,
-            password :bcrypt.hashSync(req.body.password,8),
+            password: bcrypt.hashSync(req.body.password, 8),
             role : req.body.role || 'auxiliar' //Usamos el valor directo
         });
         const savedUser = await user.save();
         const token = jwt.sing({id:savedUser._id},
             config.secret,{
+                expiresIn: config.jwtExpiration
 
             });
         res.status(200).json({
@@ -49,7 +49,6 @@ exports.singup = async(req,res)=>{
 exports.signin = async(req,res)=>{
     try{
     console.log('[AutoController] Body recibido:', req.body);
-
     // 1 validacion de campos requeridos
 
     if((!req.body.username && !req.body.email) || !req.body.password){
@@ -81,17 +80,16 @@ exports.signin = async(req,res)=>{
             });
         }
         // Validar que el usuario tenga contraseña
-
         if(!user.password){
-            console.log('[AuthController] Uusario sin contraseña')
+            console.log('[AuthController] Usuario sin contraseña registrada')
             return res.status(500).json({
                 success:false,
                 message: 'Error en la configuracion '
             });
         }
-        // Verificar contrase´ña con valida adiccional
 
-console.log('[AuthController] Comparando contaseñas ...');
+        // Verificar contraseña con valida adiccional
+console.log('[AuthController] Comparando contraseñas ...');
 if (!req.body.password || typeof req.body.password !== 'string') {
     console.log('[AuthControllers] Contraseña no valida en request');
     return res.status(400).json({
@@ -141,14 +139,11 @@ res.status(200).json({
         message: 'Error en el servidor',
         error: error.message
     });
-}
-
-}
+}}
 
 
 
-// Obtener todos los usuarios (Admin y coordinador)
-
+// 3. Obtener todos los usuarios (Admin y coordinador)
 exports.getAllUsers = async (req, res) => {
     try {
         // Verificar permisos
@@ -158,7 +153,7 @@ exports.getAllUsers = async (req, res) => {
                 message: 'No tienes permisos para  ver usuarios'
             });
         }
-        const users = await User.find({}).select('-password-___v');
+        const users = await User.find({}).select('-password-__v');
         return res.status(200).json({
             success: true,
             count: users.length,
@@ -182,7 +177,7 @@ exports.getAllUserById = async(req,res)=>{
         console.log('[1] ID Recibido :',id);
 
         if(!id || typeof id !=='string' || id.length !==24){
-            console.log(['[ERROR] ID invalido  ']);
+            console.log('[ERROR] ID invalido' );
             return res.status(400).json({
                 success:false,
                 message: 'ID de usuario no valido'
@@ -206,7 +201,7 @@ exports.getAllUserById = async(req,res)=>{
         // 3.1 Buscar usuarios
         const user = await db.collection('users').findOne(
             {_id: new ObjectId(id)},
-            {projection:{_id:1, username:1 ,email:1, createAt:1, updateAt:1}}
+            {projection:{_id: 1, username: 1 ,email: 1, createAt: 1, updateAt: 1}}
         );
         console.log('[4] Usuario encontrado', user);
         if(!user){
@@ -216,11 +211,11 @@ exports.getAllUserById = async(req,res)=>{
                 message: 'Usuario no encontrado'
             });
         }
-        // 3,2 Buscar roles en dos pasos
+        // 3.2 Buscar roles en dos pasos
         console.log('[5] Buscando roles...');
-        const userRoles = await db.collection(user_roles).find(
+        const userRoles = await db.collection('user_roles').find(
             {userId: new ObjectId(id)}
-        ). toArray();
+        ).toArray();
         const roleIds = userRoles.maps(ur =>ur.rolesId);
         const roles = await db.collection('roles').find(
             {_id:{$in : roleIds}}
@@ -234,10 +229,10 @@ exports.getAllUserById = async(req,res)=>{
             data:{
                 id:user._id,
                 username : user.email,
-                email:user.email,
-                roles:roles.maps(r => r.name),
-                createdAt: user.createAt,
-                updatedAt: user.updateAt
+                email: user.email,
+                roles: roles.maps(r => r.name),
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
             }
         };
 
@@ -258,7 +253,8 @@ exports.getAllUserById = async(req,res)=>{
             success: false,
             message: 'Error al obtener  usuarrio',
             error:process.env.NODE_ENV === 'development' ?{
-                typeof : error.message,
+                typeof : error.name,
+                message: error.message,
                 code : error.code
             }: undefined
         });
@@ -270,25 +266,25 @@ exports.updateUser = async(req,res) =>{
     try{
         const {id} = req.params;
         const updates = req.body;
-        const currentUserRole = req.user.Role;
+        const currentUserRole = req.userRole;
         const  currentUserId = req.userId;
 
         // Buscar usuario a actualizar
-        const userToUpDate = await User.findById(id);
-        if(!userToUpDate){
+        const userToUpdate = await User.findById(id);
+        if(!userToUpdate){
             return res.status(404).json({
                 success:false,
                 message:'Usuario no encontrado'
             });
         }
         // Verificar permisos
-        if(currentUserRole === ROLES.AUXILIAR && userToUpDate._id.toString() !== currentUserId){
+        if(currentUserRole === ROLES.AUXILIAR && userToUpdate._id.toString() !== currentUserId){
             return res.status(403).json({
                 success: false,
                 message:'Solo puedes modificar tu propio perfil'
             });
         }
-        if(correntUserRole === ROLES.COORDINADOR && userToUpDate.role === ROLES.ADMIN){
+        if(currentUserRole === ROLES.COORDINADOR && userToUpdate.role === ROLES.ADMIN){
             return res.status(403).json({
                 success:false,
                 message: 'No puedes modificar administradores' 
@@ -303,7 +299,7 @@ exports.updateUser = async(req,res) =>{
         const filteredUpdates = {};
         Object.keys(updates).forEach(key =>{
             if(allowedFields.includes(key)){
-                filteredUpdates[key] = updates[key]
+                filteredUpdates[key] = updates[key];
             }
         });
 
@@ -312,7 +308,7 @@ exports.updateUser = async(req,res) =>{
             filteredUpdates.password = bcrypt.hashSync(updates.password,8);
         }
 
-        const updateUser = await User.findByIdAndUpdate(id,filteredUpdates,{new:true}).select('-password-___v');
+        const updateUser = await User.findByIdAndUpdate(id,filteredUpdates,{new:true}).select('-password-__v');
 
         return res.status(200).json({
             success:true,
@@ -332,7 +328,7 @@ exports.updateUser = async(req,res) =>{
 exports.deteleUser = async(req,res)=>{
     try{
         // Verificar que sea admin
-        if(!checkPermission(req.userRole,[removeEventListener.ADMIN])){
+        if(!checkPermission(req.userRole,[ROLES.ADMIN])){
             return res.status(403).json({
                 success: false,
                 message:'Solo administradores pueden eliminar  usuarios',

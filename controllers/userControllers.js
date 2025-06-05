@@ -33,7 +33,7 @@ exports.getUserById = async(req,res) => {
             })
         }
         // Validacion de acceso
-        if(req.user.role === 'auxiliar ' && req.user.id !==user.id.toString()){
+        if(req.user.role === 'auxiliar ' && req.user.id !== user.id.toString()){
             return res.status(403).json({
                 success:false,
                 message:'No tienes permisos para ver este usuario'
@@ -55,7 +55,7 @@ exports.getUserById = async(req,res) => {
             success: false,
             message: 'Error al obtener usuario',
             error : error.message
-        })
+        });
     }
 };
 
@@ -92,7 +92,7 @@ exports.createUser = async(req,res)=>{
 // Actualizar usuario (Admin y coordinador)
 exports.updateUser = async(req,res) =>{
     try{
-        const updateUser = await User.findByIdAndUpdate(
+        const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
             {$set: req.body},
             {new: true}
@@ -107,7 +107,7 @@ exports.updateUser = async(req,res) =>{
 
         res.status(200).json({
             success:true,
-            message: 'Usuario acutalizado correctamente',
+            message: 'Usuario actualizando correctamente',
             user:updatedUser
         })
     }catch(error){

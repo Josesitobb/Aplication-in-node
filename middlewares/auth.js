@@ -12,7 +12,7 @@ exports.authenticate = async(req,res,next)=>{
                 message:'Toke de autentiacion requerido'
             });
         }
-        const decoded = jwt.verify(token,proccess.env,JWT_SECRET);
+        const decoded = jwt.verify(token,proccess.env.JWT_SECRET);
         const  user = await User.findById(decoded.id);
         if (!user){
             return res.status(401),json({
@@ -27,7 +27,7 @@ exports.authenticate = async(req,res,next)=>{
         res.status(500).json({
             success:false,
             message:'Token invalido o expirado'
-        })
+        });
     }
 };
 

@@ -1,6 +1,6 @@
 const { json } = require('express/lib/response');
 const User = require('../models/User');
-const checlDuplicateUsernameOrEmail = async(req,res,next)=>{
+const checkDuplicateUsernameOrEmail = async(req,res,next)=>{
     try{
         const user = await User.findOne({
             $or:[
@@ -40,7 +40,7 @@ const checkRolesExisted = (req,res,next)=>{
 }
 
 module.exports = {
-    checlDuplicateUsernameOrEmail,
-    checkRolesExisted
+    checkRolesExisted,
+    checkDuplicateUsernameOrEmail
 }
 

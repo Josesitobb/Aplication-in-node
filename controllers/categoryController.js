@@ -30,7 +30,7 @@ exports.createCategory = async (req,res) => {
     });
     }
     
-    const newCategory = new Categorye({
+    const newCategory = new Category({
         name: trimmedName,
         description: trimmedDesc
     });
@@ -69,7 +69,6 @@ exports.getCategories = async(req,res) =>{
             success:true,
             data: categories
         });
-
 
     }catch(error){
         console.error('Error en getCategories:',error);
@@ -158,7 +157,7 @@ exports.updateCategory = async (req, res) => {
 
 exports.deleteCategory = async (req, res ) => {
     try {
-        const deleteCategory = await Category.findByIdAnDelete( req.
+        const deleteCategory = await Category.findByIdAndDelete( req.
             params.id);
             if (!deleteCategory) {
                 return res.status(400).json({

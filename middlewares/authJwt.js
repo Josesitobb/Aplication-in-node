@@ -15,12 +15,12 @@ const verifyTokenFn=(req,res,next)=>{
             console.log('[AuthJWT] Error:token no proporcionado');
             return res.status(403).json({
                 succes:false,
-                message:'Token no proporcioado'
+                message:'Token no proporcionado'
             });
         }
         const decoded = jwt.verify(token,config.secret);
-        req.user.Id = decoded.id;
-        req.user.Role = decoded.Role;
+        req.userId = decoded.id;
+        req.userRole = decoded.role;
         console.log('[AuthJWT] Token valido para',decoded.email);
         next();
     }catch(error){
@@ -51,15 +51,13 @@ try{
 }
 };
 
-
 // Validacion antes de exportar 
-if(typeof verifyTokenFn !=='funtion'){
+if(typeof verifyTokenFn !=='function'){
     console.error('[AuthJWT] ERROR : verifyTokenFn no es una funcion')
     throw new Error('verifyTokenFn debe ser una funcion');
 }
 
 console.log('[AuthJWT] Middleawre verifyTokenFn en una funcion', typeof verifyTokenFn);
-
 module.exports ={
     verifyToken:verifyTokenFn
 };

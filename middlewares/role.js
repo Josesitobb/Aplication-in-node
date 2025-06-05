@@ -1,4 +1,4 @@
-const checkRole = (...allowebRoles) =>{
+const checkRole = (...allowedRoles) =>{
 return (req,res,next) =>{
     if(!req.userRole){
         console.error('Intento de verificar rol son token valido');
@@ -7,7 +7,7 @@ return (req,res,next) =>{
             message:'ERROR AL VERIFICAR EL ROL'
         });
     }
-    if(!allowebRoles.includes(req.userRole)){
+    if(!allowedRoles.includes(req.userRole)){
         console.log(`Aceeso denegado para ${req.userEmail} (${req.userRole}) en ruta ${req.path}`);
         return res.status(403).json({
         success:false,
@@ -21,18 +21,17 @@ return (req,res,next) =>{
 };
 
 // Funciones especificas por rol
-
 const isAdmin = (req,res,next)=>{
     return checkRole('admin')(req,res,next);
 };
 
 const isCoordinador = (req,res,next)=>{
 return checkRole('coordinador')(req,res,next);
-}
+};
 
 const isAuxiliar =(req,res,next)=>{
     return checkRole('auxiliar')(req,res,next);
-}
+};
 
 module.exports={
     checkRole,

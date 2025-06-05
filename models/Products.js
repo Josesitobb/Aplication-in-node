@@ -1,5 +1,6 @@
-const { type } = require('express/lib/response');
+
 const mongoose = require('mongoose');
+
 const productSchema = new mongoose.Schema({
     name:{
         type:String,
@@ -13,7 +14,7 @@ const productSchema = new mongoose.Schema({
         trim : true
     },
     price:{
-        type:String,
+        type:Number,
         required:[true,'El precio es obligatorio'],
         trim:true,
         min:[0,'El precio no puede ser negativo']
@@ -51,5 +52,5 @@ productSchema.post('save',function(error,doc,next){
     }
 })
 
-module.exports = mongoose.model('product'. productSchema);
+module.exports = mongoose.model('product', productSchema);
 

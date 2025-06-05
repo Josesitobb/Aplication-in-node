@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const subcategoryController = require('../controllers/subcategoryController');
-const {check} = require('express')
+const {check} = require('express-validator');
 const validateSubcategory = [
     check('name').not().isEmpty().withMessage('El nombre  es obligatorio'),
     check('description').not().isEmpty().withMessage('La decripcion es obligatoria'),

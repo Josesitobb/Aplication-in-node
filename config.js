@@ -1,5 +1,5 @@
 module.exports ={
-    SECRET: process.evb.JWT_SECRET || 'Tu_clave_secreta',
+    SECRET: process.env.JWT_SECRET || 'Tu_clave_secreta',
     TOKEN_EXPIRATION:process.env.TOKEN_EXPIRATION || '24h',
 
     // 2.Configuracion de base de datos
@@ -11,5 +11,10 @@ module.exports ={
             useUnifiedTopology:true
         }
     },
-    // 3.Roles del sistema (deben coincidir con tu implementacionn)
-}
+    // 3.Roles del sistema (deben coincidir con tu implementacion)
+    ROLES:{
+        ADMIN:'admin',
+        COORDINADOR:'coordinador',
+        AUXILIAR :'auxiliar'
+    }
+};

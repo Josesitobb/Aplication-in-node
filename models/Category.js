@@ -18,13 +18,12 @@ const categoryShema = new mongoose.Schema({
 });
 
 // Eliminar el indice problematico
-
 categoryShema.pre('save',async function(next){
     try{
         const collection = this.constructor.collection;
         const indexes = await collection.indexes();
         // Buscar y eliminar indice problematico con nombre  "nombre_1"
-        const problematicIndex = indexes.find(indexes.name ==="nombre_1");
+        const problematicIndex = indexes.find(index=>index.name ==="nombre_1");
         if(problematicIndex){
             await collection.dropIndex('nombre_1');
 

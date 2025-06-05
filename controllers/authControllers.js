@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const config = require('../config/auth.config');
 
 // Roles del sistema
-
 const ROLES = {
     ADMIN:' admin',
     COORDINADOR : 'coordinador',
@@ -17,27 +16,42 @@ const checkPermission = (UserRole,allwebRoles)=>{
 };
 
 // 1. Registro de usuarios(SOLO ADMIN)
-exports.singup = async(req,res)=>{
+exports.signup   = async(req,res)=>{
     try{
+
+        console.log('[AuthController] Registro iniciado', req.body);
+        if(!req.body.email || req.body.password){
+            return res.status(400).json({
+                success:false,
+                message:'Email y contraseña son requeridos'
+
+            });
+        }
+
         const user = new User({
-            username:req.body.username,
+            // Username:req.body.username
             email :req.body.email,
-            password: bcrypt.hashSync(req.body.password, 8),
+            password: req.body.password,
             role : req.body.role || 'auxiliar' //Usamos el valor directo
         });
         const savedUser = await user.save();
-        const token = jwt.sing({id:savedUser._id},
+        console.log('[AuthController] Usuario reggistrado',savedUser.email);
+
+
+        const token = jwt.sign({id:savedUser._id},
             config.secret,{
                 expiresIn: config.jwtExpiration
-
             });
+            const userData = savedUser.toObject();
+            delete userData.password;
         res.status(200).json({
             success: true,
             message : 'Usuario registrado correctamente',
             token:token,
-            user:savedUser
+            user:userData
         });
-    }catch(error){
+    } catch(error){
+         console.error('[AuthController] Error en registro')
         res.status(500).json({
             success:false,
             message:'Error al registrar usuario',
@@ -45,103 +59,65 @@ exports.singup = async(req,res)=>{
         });
     }
 };
-
+// 2 login comun para todos
 exports.signin = async(req,res)=>{
     try{
     console.log('[AutoController] Body recibido:', req.body);
-    // 1 validacion de campos requeridos
-
-    if((!req.body.username && !req.body.email) || !req.body.password){
-
-        console.log('[AuthController] campos faltantes',{
-            username:req.body.username,
-            email:req.body.email,
-            password:req.body.password ? '***' :
-            'NO PROVISTO' 
-        });
-        return res.status(400).json({
+        if(!req.body.email || !req.body.password){
+           return res.status(400).json({
             success:false,
-            message:'Se requiere email / username / password'
+            message:'Email y contraseña son requeridos'
+           });
+        }
+
+    const user = await user.findOne({email:req.body.email}).select('+password');
+    if(!user){
+        console.log('[AuthController] Usuario no encontrado');
+        return res.status(404).json({
+            success:false,
+            message:'Usuario no encontrado'
         });
     }
-    // Buscar usuario con todos los campos necesarios
-    const user = await User.findOne({
-        $or:[
-            {username : req.body.username},
-            {email: req.body.email}
-        ]
-    }).select('+password'); //Asegurar que traiga el campo de password
+    console.log('[AuthController] Comparando  contraseña para ', user.email);
+    const isMatch =  await user.comparePassword(req.body.password);
+    if(!isMatch){
+        console.log('[AuthControllers] Contraseña no coincide');
+        return res.status(401).json({
+            success:false,
+            message: 'Credenciales invalidas'
+        });
+    }
 
-        if(!user){
-            console.log('[AuthController] Usuario no encontrado');
-            return res.status(404).json({
-                success:false,
-                message:'Usuario no encontrado'
-            });
-        }
-        // Validar que el usuario tenga contraseña
-        if(!user.password){
-            console.log('[AuthController] Usuario sin contraseña registrada')
-            return res.status(500).json({
-                success:false,
-                message: 'Error en la configuracion '
-            });
-        }
-
-        // Verificar contraseña con valida adiccional
-console.log('[AuthController] Comparando contraseñas ...');
-if (!req.body.password || typeof req.body.password !== 'string') {
-    console.log('[AuthControllers] Contraseña no valida en request');
-    return res.status(400).json({
-        success: false,
-        message: 'Formato de contraseña invalido'
-    });
-}
-
-
-const passwordIsValid = bcrypt.compareSync(
-    req.body.password,
-    user.password
-);
-
-if (!passwordIsValid) {
-    console.log('[AuthController] Contraseña incorrecta');
-    return res.status(401).json({
-        success: false,
-        message: 'Crendeciales  Invalidas'
-    });
-}
-
+    
 // 5. Generar token
-const token = jwt.sing({ id: user._id }, config.secret, {
-    expiresIn: config.jwtExpiration
+const token = jwt.sing(
+    {  
+        id:user._id,
+        email:user.email,
+        role:user.role
+},
+config.secret,{
+    expiresIn:config.jwtExpiration
 });
 
-// 6.Responder (ocultado password)
-const userResponse = user.toObject();
-delete userResponse.password;
 
 res.status(200).json({
     success: true,
-    message: 'Login exitoso',
-    token: token,
-    user: userResponse
+    token,
+    user:{
+        id: user.id,
+        email: user.email,
+        role:user.role
+    }
 });
         
-
-
-
         
 }catch (error) {
-    console.error('[AuthController] Error critico', error)
     res.status(500).json({
-        success: false,
-        message: 'Error en el servidor',
         error: error.message
     });
-}}
-
-
+}
+};
 
 // 3. Obtener todos los usuarios (Admin y coordinador)
 exports.getAllUsers = async (req, res) => {

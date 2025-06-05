@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController= require('../controllers/authControllers');
 const verifySignUp = require('../middlewares/verifySignUp');
-const { methods } = require('express/lib/utils');
+// const { methods } = require('express/lib/utils');
 
 // Importarcion de verificacio
 let verifyToken;
@@ -20,7 +20,7 @@ try{
 // Middleware de  diagnostico
 router.use((req,res,next)=>{
 console.log('\n[AuthRoutes] Peticion recibida:',{
-    method:req.methods,
+    method:req.method,
     path:req.path,
     Headers:{
         authorization:req.headers.authorization ? '***':'NO',
@@ -29,6 +29,7 @@ console.log('\n[AuthRoutes] Peticion recibida:',{
 });
 next();
 });
+
 
 // Rutas de lign (sin proteccion)
 router.post('/signin',authController.signin);
@@ -42,7 +43,7 @@ router.post('/signup',(req,res,next)=>{
 
 verifySignUp.checkDuplicateUsernameOrEmail,
 verifySignUp.checkRolesExisted,
-authController.singup
+authController.signup
 );
 
 // Verificacion final de rutas

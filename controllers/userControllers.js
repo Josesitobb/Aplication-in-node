@@ -75,8 +75,8 @@ exports.createUser = async(req,res)=>{
             message: 'Usuario creado exitosamente',
             user:{
                 id:savedUser._id,
-                username : savedUser.username,
-                email: savedUser.email,
+                username :savedUser.username,
+                email:savedUser.email,
                 roles:savedUser.role
             }
         })

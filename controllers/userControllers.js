@@ -2,44 +2,44 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
 // Obtener todos los usuarios (solo Admin)
-exports.getAllUsers = async(req,res) =>{
+exports.getAllUsers = async (req, res) => {
     console.log('[CONTROLLER] Ejecutando getAllUsers');// Diagnostico
 
-    try{
+    try {
         const users = await User.find().select('password');
-        console.log('[CONTROLLER] Usuarios encontrados:',users.length); //Diagnostico
+        console.log('[CONTROLLER] Usuarios encontrados:', users.length); //Diagnostico
         res.status(200).json({
-            success : true,
-            data:users
+            success: true,
+            data: users
         });
-    }catch(error){
+    } catch (error) {
         console.error('[CONTROLLER] Eror en getAllUser:', error.message);//Diagnostico
         res.status(500).json({
-            success:false,
+            success: false,
             message: 'Error al obtener usuarios'
         });
     }
 };
 
 // Obtener usuarios especifico
-exports.getUserById = async(req,res) => {
-    try{
+exports.getUserById = async (req, res) => {
+    try {
         const user = await User.findById(req.params.id).select('-password');
 
-        if(!user){
+        if (!user) {
             return res.status(404).json({
-                success:false,
-                message:'Usuario no encontrado'
+                success: false,
+                message: 'Usuario no encontrado'
             })
         }
         // Validacion de acceso
-        if(req.user.role === 'auxiliar ' && req.user.id !== user.id.toString()){
+        if (req.userRole === 'auxiliar ' && req.userId !== user.id.toString()) {
             return res.status(403).json({
-                success:false,
-                message:'No tienes permisos para ver este usuario'
+                success: false,
+                message: 'No tienes permisos para ver este usuario'
             })
         }
-        if(req.user.role == 'coordinador' && user.role =='admin'){
+        if (req.userRole == 'coordinador' && userRole == 'admin') {
             return res.status(403).json({
                 success: false,
                 message: 'NO pudes ver usuaios admin'
@@ -47,102 +47,102 @@ exports.getUserById = async(req,res) => {
         }
 
         res.status(200).json({
-            success:true,
+            success: true,
             user
         });
-    }catch(error){
+    } catch (error) {
         res.status(500).json({
             success: false,
             message: 'Error al obtener usuario',
-            error : error.message
+            error: error.message
         });
     }
 };
 
 // Crear usuario (Admin  coordinador)
-exports.createUser = async(req,res)=>{
-    try{
-        const {username,email,password,role}= req.body;
+exports.createUser = async (req, res) => {
+    try {
+        const { username, email, password, role } = req.body;
         const user = new User({
             username,
             email,
-            password: await bcrypt.hash(password,10),
+            password: await bcrypt.hash(password, 10),
             role
         });
-        const savedUser =  await user.save();
+        const savedUser = await user.save();
         res.status(201).json({
-            success:true,
+            success: true,
             message: 'Usuario creado exitosamente',
-            user:{
-                id:savedUser._id,
-                username :savedUser.username,
-                email:savedUser.email,
-                roles:savedUser.role
+            user: {
+                id: savedUser._id,
+                username: savedUser.username,
+                email: savedUser.email,
+                roles: savedUser.role
             }
         })
-    }catch(error){
+    } catch (error) {
         res.status(500).json({
-            success:false,
-            message:'Error al crear usuario',
+            success: false,
+            message: 'Error al crear usuario',
             error: error.message
         });
     }
 };
 
 // Actualizar usuario (Admin y coordinador)
-exports.updateUser = async(req,res) =>{
-    try{
+exports.updateUser = async (req, res) => {
+    try {
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
-            {$set: req.body},
-            {new: true}
+            { $set: req.body },
+            { new: true }
         ).select('-password');
 
-        if(!updatedUser){
+        if (!updatedUser) {
             return res.status(404).json({
-                success:false,
-                message:'Uusario no encontrado'
+                success: false,
+                message: 'Uusario no encontrado'
             });
         }
 
         res.status(200).json({
-            success:true,
+            success: true,
             message: 'Usuario actualizando correctamente',
-            user:updatedUser
+            user: updatedUser
         })
-    }catch(error){
+    } catch (error) {
         res.status(500).json({
-            success:false,
-            message:'Error al actualizar usuario',
+            success: false,
+            message: 'Error al actualizar usuario',
             error: error.message
         });
     }
 };
 
 // eliminar usuario (solo admin)
-exports.deleteUser = async(req,res)=>{
+exports.deleteUser = async (req, res) => {
     console.log('[CONTROLLER] Ejecutando deleteUser para ID', req.params.id);
-    try{
+    try {
         const deletedUser = await User.findByIdAndDelete(req.params.id);
 
-        if(!deletedUser){
+        if (!deletedUser) {
             console.log('[CONTROLLER] Usuario no encontrdo para eliminar'); //Diagnostico 
             return req.status(404).json({
-                success:false,
-                message:'Usuario no encontrado'
+                success: false,
+                message: 'Usuario no encontrado'
             })
         }
 
         console.log('[CONTROLLER] Usuario eliminado', deletedUser._id);
         res.status(200).json({
-            success:true,
-            message:'Usuario eliminado correctamente '
+            success: true,
+            message: 'Usuario eliminado correctamente '
         });
-    }catch(error){
-        console.error('[CONTROLLER Error al eliminar usuario]',error.message);//Diagnostico
+    } catch (error) {
+        console.error('[CONTROLLER Error al eliminar usuario]', error.message);//Diagnostico
         res.status(500).json({
-            success:false,
-            message:'Error al eliminar usuario '
+            success: false,
+            message: 'Error al eliminar usuario '
         });
     }
 };

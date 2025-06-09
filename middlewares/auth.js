@@ -4,7 +4,7 @@ const { json } = require('express/lib/response');
 
 exports.authenticate = async(req,res,next)=>{
     try{
-        const token = req.header('Autorizacion')?.replace('Bearer','');
+        const token = req.header('Authorization')?.replace('Bearer', '');
 
         if (!token){
             return res.status(401).json({
@@ -15,7 +15,7 @@ exports.authenticate = async(req,res,next)=>{
         const decoded = jwt.verify(token,process.env.JWT_SECRET);
         const  user = await User.findById(decoded.id);
         if (!user){
-            return res.status(401),json({
+            return res.status(401).json({
                 success:false,
                 message:'Usuario no encontrado'
             });

@@ -4,13 +4,13 @@ const Subcategory = require('../models/Subcategory');
 
 exports.createProduct = async (req, res) => {
     try {
-        const { name, description, price, stock, category, subcategory } = req.body;
+        const {name,description,price,stock,category,subcategory} =req.body;
 
         //validacion de campos requeridos
         if (!name || !description || !price || !stock || !category || !subcategory) {
             return res.status(400).json({
                 success: false,
-                message: 'Todos los campos son obligatorios'
+                message: 'Todos los campos son obligatoriosssss'
             });
         }
 
@@ -107,20 +107,18 @@ exports.getProducts = async (req, res) => {
 }
 
 
-exports.getProductById = async (res, req) => {
+exports.getProductById = async (req,res) => {
     try {
-        const product = await Product.findById(req.params.id)
-            .populate('category', 'name description')
-            .populate('subcategory', 'name description')
+        const product = await Product.findById(req.params.id).populate('category', 'name description').populate('subcategory', 'name description')
 
         if (!product) {
-            return res.status(404).json({
+           res.status(404).json({
                 success: false,
                 message: 'producto no encontrado'
             })
         }
 
-        res.status(200).json({
+       return res.status(200).json({
             success: true,
             data: product
         })
@@ -132,6 +130,7 @@ exports.getProductById = async (res, req) => {
         });
     };
 };
+
 
 exports.updateProduct = async (req, res) => {
     try {

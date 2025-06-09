@@ -1,5 +1,4 @@
 const express = require('express');
-
 const router = express.Router();
 const subcategoryController = require('../controllers/subcategoryController');
 const { check } = require('express-validator');
@@ -11,8 +10,8 @@ const validateSubcategory = [
 
 // Rutas
 router.post('/', validateSubcategory, subcategoryController.createSubcategory);
-router.get('/', subcategoryController.getSubcategories);
-router.get('/:id', subcategoryController.getSubcategoryById);
+router.get('/',subcategoryController.getSubcategories);
+router.get('/:id',subcategoryController.getSubcategoryById);
 router.put('/:id', validateSubcategory, subcategoryController.updateSubcategory);
 router.delete('/:id', subcategoryController.deleteSubcategory);
 

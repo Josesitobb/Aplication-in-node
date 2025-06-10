@@ -4,7 +4,7 @@ const Subcategory = require('../models/Subcategory');
 
 exports.createProduct = async (req, res) => {
     try {
-        const {name,description,price,stock,category,subcategory} =req.body;
+        const { name, description, price, stock, category, subcategory } = req.body;
 
         //validacion de campos requeridos
         if (!name || !description || !price || !stock || !category || !subcategory) {
@@ -107,18 +107,18 @@ exports.getProducts = async (req, res) => {
 }
 
 
-exports.getProductById = async (req,res) => {
+exports.getProductById = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id).populate('category', 'name description').populate('subcategory', 'name description')
 
         if (!product) {
-           res.status(404).json({
+            res.status(404).json({
                 success: false,
                 message: 'producto no encontrado'
             })
         }
 
-       return res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: product
         })
@@ -134,6 +134,12 @@ exports.getProductById = async (req,res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
+        if (req.userRole !== "admin" && req.userRole !== "coordinador") {
+            return res.status(403).json({
+                success: false,
+                message: "Solo administradores o coordinadores pueden actualizar"
+            });
+        }
         const { name, description, price, stock, category, subcategory } = req.body;
         const updateData = {};
 
@@ -185,44 +191,57 @@ exports.updateProduct = async (req, res) => {
             .populate('category', 'name')
             .populate('subcategory', 'name')
 
-            if (!updatedProduct) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Producto no encontrado'
-                })
-            }
-            res.status(200).json({
-                success: true,
-                message: 'Producto actualizado exitosamente',
-                data: updatedProduct
-            });
+        if (!updatedProduct) {
+            return res.status(404).json({
+                success: false,
+                message: 'Producto no encontrado'
+            })
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Producto actualizado exitosamente',
+            data: updatedProduct
+        });
     } catch (error) {
         console.error('Error en updatedProduct')
+        res.status(500).json({
+            success: false,
+            message: "Erro al actualizar el producto",
+            error: error.message
+        });
 
 
     }
 }
 
 exports.deleteProduct = async (req, res) => {
-    try{
+    try {
+        // validad si es admin en dado caso que no,no lo puede eliminar
+        if (req.userRole !== "admin") {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes permiso para esta accion'
+            })
+        }
+
         const product = await Product.findByIdAndDelete(req.params.id);
-        if(!product){
+        if (!product) {
             return res.status(404).json({
-                success:false,
-                message: 'Producto no encontrado'       
+                success: false,
+                message: 'Producto no encontrado'
             })
         }
 
         res.status(200).json({
-            success:true,
+            success: true,
             message: ' Producto eliminado exitosamente',
             data: product
         })
-    }catch(error){
-        console.error('Error en deleteProduct: ',error);
+    } catch (error) {
+        console.error('Error en deleteProduct: ', error);
         res.status(500).json({
-            success:false,
-            message:'Error al eliminat el producto'
+            success: false,
+            message: 'Error al eliminat el producto'
         })
     }
 }

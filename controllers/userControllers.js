@@ -6,7 +6,14 @@ exports.getAllUsers = async (req, res) => {
     console.log('[CONTROLLER] Ejecutando getAllUsers');// Diagnostico
 
     try {
-        const users = await User.find().select('password');
+        const users = await User.find().select('-password');
+        // VALIDAR QUE SEA SOLO ADMIN
+        if (req.userRole !== 'admin') {
+            return res.status(403).json({
+                success: true,
+                message: 'No tienes permiso para esta ver los usuario '
+            })
+        }
         console.log('[CONTROLLER] Usuarios encontrados:', users.length); //Diagnostico
         res.status(200).json({
             success: true,
@@ -33,13 +40,13 @@ exports.getUserById = async (req, res) => {
             })
         }
         // Validacion de acceso
-        if (req.userRole === 'auxiliar ' && req.userId !== user.id.toString()) {
+        if (req.userRole === 'auxiliar' && req.userId !== user.id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: 'No tienes permisos para ver este usuario'
             })
         }
-        if (req.userRole == 'coordinador' && userRole == 'admin') {
+        if (req.userRole == 'coordinador' && req.userRole == 'admin') {
             return res.status(403).json({
                 success: false,
                 message: 'NO pudes ver usuaios admin'
@@ -48,7 +55,7 @@ exports.getUserById = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data:user
+            data: user
         });
     } catch (error) {
         res.status(500).json({
@@ -62,6 +69,14 @@ exports.getUserById = async (req, res) => {
 // Crear usuario (Admin  coordinador)
 exports.createUser = async (req, res) => {
     try {
+
+        if (req.userRole !== "auxiliar") {
+            return res.status(403).json({
+                success: false,
+                message: "No tienes permisos para hacer esta accion"
+            })
+        }
+
         const { username, email, password, role } = req.body;
         const user = new User({
             username,
@@ -92,6 +107,14 @@ exports.createUser = async (req, res) => {
 // Actualizar usuario (Admin y coordinador)
 exports.updateUser = async (req, res) => {
     try {
+
+        if (req.userRole !== "auxiliar") {
+            return res.status(403).json({
+                success: false,
+                message: "No tienes permisos para hacer esta accion"
+            })
+        }
+
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
             { $set: req.body },
@@ -123,7 +146,17 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
     console.log('[CONTROLLER] Ejecutando deleteUser para ID', req.params.id);
     try {
+        // validad si es admin en dado caso que no,no lo puede eliminar
+        if (req.userRole == !"admin") {
+            return res.status(403).json({
+                success: false,
+                message: "No tienes permisos para eliminar"
+            })
+        }
+
         const deletedUser = await User.findByIdAndDelete(req.params.id);
+
+
 
         if (!deletedUser) {
             console.log('[CONTROLLER] Usuario no encontrdo para eliminar'); //Diagnostico 

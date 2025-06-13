@@ -6,8 +6,8 @@ const config = require('../config/auth.config');
 // Roles del sistema
 const ROLES = {
   ADMIN: 'admin',
-  COORDINADOR: 'coordinador',
-  AUXILIAR: 'auxiliar'
+  FUNCIONARIOS: 'funcionarios',
+  CONTRATISTA: 'contratista'
 };
 
 // Función para verificar permisos
@@ -19,20 +19,23 @@ const checkPermission = (userRole, allowedRoles) => {
 exports.signup = async (req, res) => {
   try {
     // Validación manual adicional
-    if (!req.body.username || req.body.username.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        message: "El nombre de usuario es requerido",
-        field: "username"
-      });
-    }
+    // if (!req.body.username || req.body.username.trim() === '') {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "El nombre de usuario es requerido",
+    //     field: "username"
+    //   });
+    // }
 
     // Crear instancia de usuario
     const user = new User({
-      username: req.body.username.trim(),
-      email: req.body.email.toLowerCase().trim(),
-      password: req.body.password,
-      role: req.body.role || 'auxiliar'
+      nombre: req.body.nombre.trim(),
+      apellido: req.body.apellido.toLowerCase().trim(),
+      documento: req.body.documento,
+      telefono: req.body.telefono,
+      email: req.body.email,
+      password:req.body.password,
+      role: req.body.role || 'contratistas'
     });
 
     // Guardar usuario en la base de datos
